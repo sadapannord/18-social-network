@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-// const assignmentSchema = require('./Assignment');
+const thoughtSchema = require("./Thought");
 
 // Schema to create Student model
 const userSchema = new Schema(
@@ -39,6 +39,6 @@ const userSchema = new Schema(
 userSchema.virtual("friendCount").get(function () {
   return this.friends.length;
 });
-const User = model("user", userSchema);
+const User = model("User", userSchema);
 
 module.exports = User;
