@@ -1,4 +1,5 @@
 const { Thought, User } = require("../models");
+const reactionSchema = require("../models/Reaction");
 
 module.exports = {
   // Get all thought
@@ -21,7 +22,20 @@ module.exports = {
   // Create a thought
   createThought(req, res) {
     Thought.create(req.body)
-      .then((thought) => res.json(thought))
+      .then((thought) => {
+        return User.findOneAndUpdate(
+          { username: req.body.username },
+          { $addToSet: { thoughts: thought._id } },
+          { runValidators: true, new: true }
+        );
+      })
+      .then((user) =>
+        !user
+          ? res.status(404).json({
+              message: "Thought created, but found no user with that ID",
+            })
+          : res.json("Created the thought 🎉")
+      )
       .catch((err) => {
         console.log(err);
         return res.status(500).json(err);
@@ -33,7 +47,7 @@ module.exports = {
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: "No thought with that ID" })
-          : Student.deleteMany({ _id: { $in: thought.students } })
+          : User.findOneAndUpdate({ username: { $in: User.thoughts } })
       )
       .then(() => res.json({ message: "Thought and students deleted!" }))
       .catch((err) => res.status(500).json(err));
@@ -43,6 +57,20 @@ module.exports = {
     Thought.findOneAndUpdate(
       { _id: req.params.thoughtId },
       { $set: req.body },
+      { runValidators: true, new: true }
+    )
+      .then((thought) =>
+        !thought
+          ? res.status(404).json({ message: "No thought with this id!" })
+          : res.json(thought)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+
+  addReaction(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $set: reactionSchema },
       { runValidators: true, new: true }
     )
       .then((thought) =>
