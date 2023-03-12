@@ -62,6 +62,8 @@ module.exports = {
       )
       .catch((err) => res.status(500).json(err));
   },
+
+  //add a friend
   addFriend(req, res) {
     User.findOneAndUpdate(
       { username: req.body.username },
@@ -75,19 +77,19 @@ module.exports = {
       )
       .catch((err) => res.status(500).json(err));
   },
-  getFriends(req, res) {
-    User.findOne({ _id: req.params.userId })
-      .select("-__v")
-      .then(async (user) =>
+
+  //delete friend
+  deleteFriend(req, res) {
+    User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $pull: { friends: { friendId: req.params.friendId } } },
+      { runValidators: true, new: true }
+    )
+      .then((user) =>
         !user
-          ? res.status(404).json({ message: "No user with that ID" })
-          : res.json({
-              user,
-            })
+          ? res.status(404).json({ message: "can't find user to get rid of" })
+          : res.json(user)
       )
-      .catch((err) => {
-        console.log(err);
-        return res.status(500).json(err);
-      });
+      .catch((err) => res.status(500).json(err));
   },
 };
